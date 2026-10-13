@@ -14,7 +14,7 @@ Baofeng **DM-32UV**（DP570UV）の内蔵フォントに、日本語の漢字・
 
 ## ブラウザで書き込む（Web版・Ver 0.1.1）
 
-Python は不要です。Chrome / Edge（PC版）で **[web/dm32_modjafont_writer_v0_1_1.html](web/dm32_modjafont_writer_v0_1_1.html)** を開き、画面の案内に従ってください（校正データとフォントのバックアップ → 書き込み → 読み戻し確認を自動で行います）。動作確認: Windows と Mac mini（M1）の Chrome。
+Python は不要です。Chrome / Edge（PC版）で **[web/dm32_modjafont_writer_v0_1_1.html](https://ja2izu.github.io/DM32UV-ModJaFont/web/dm32_modjafont_writer_v0_1_1.html)** を開き、画面の案内に従ってください（校正データとフォントのバックアップ → 書き込み → 読み戻し確認を自動で行います）。動作確認: Windows と Mac mini（M1）の Chrome。
 
 ## 仕組み（Python版）
 
