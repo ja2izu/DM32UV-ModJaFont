@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DM-32UV 日本語フォント書き込み</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1d2430;--mut:#5b6573;--card:#fff;--bd:#d5dae1;--acc:#0b6bcb;--accfg:#fff;--ok:#12703a;--okbg:#e6f4ea;--ng:#a3201a;--ngbg:#fdeceb;--wn:#7a4b00;--wnbg:#fff4de;--log:#10151c;--logfg:#d6e2f0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12161c;--fg:#e4e9f0;--mut:#9aa6b6;--card:#1b222b;--bd:#344050;--acc:#5aa2f0;--accfg:#08111c;--ok:#6fd49a;--okbg:#14301f;--ng:#ff9b94;--ngbg:#3a1a18;--wn:#f2c36b;--wnbg:#35290f;--log:#0b0f14;--logfg:#cfe0f3}}
+:root[data-theme="dark"]{--bg:#12161c;--fg:#e4e9f0;--mut:#9aa6b6;--card:#1b222b;--bd:#344050;--acc:#5aa2f0;--accfg:#08111c;--ok:#6fd49a;--okbg:#14301f;--ng:#ff9b94;--ngbg:#3a1a18;--wn:#f2c36b;--wnbg:#35290f;--log:#0b0f14;--logfg:#cfe0f3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.65 "BIZ UDPGothic","BIZ UDGothic","Yu Gothic UI","Meiryo",system-ui,sans-serif}
+.ver{position:fixed;top:8px;right:12px;font-size:13px;color:var(--mut);background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;z-index:10}
+main{max-width:860px;margin:0 auto;padding:44px 16px 64px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:17px;margin:0 0 8px}
+.sub{color:var(--mut);margin:0 0 16px}
+section,details{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:16px;margin:14px 0}
+details>summary{cursor:pointer;font-weight:700}
+details[open]>summary{margin-bottom:10px}
+.note{border-radius:8px;padding:10px 12px;margin:10px 0;font-size:14px}
+.warn{background:var(--wnbg);color:var(--wn)}
+.good{background:var(--okbg);color:var(--ok)}
+.bad{background:var(--ngbg);color:var(--ng)}
+label.chk{display:flex;gap:10px;align-items:flex-start;margin:7px 0;cursor:pointer}
+label.chk input{margin-top:5px}
+button{font:inherit;padding:9px 16px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);cursor:pointer}
+button.primary{background:var(--acc);color:var(--accfg);border-color:var(--acc);font-weight:700}
+button.danger{border-color:var(--ng);color:var(--ng)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.bar{height:14px;background:var(--bg);border:1px solid var(--bd);border-radius:7px;overflow:hidden}
+.bar>div{height:100%;width:0;background:var(--acc);transition:width .2s}
+.stat{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--mut);margin-top:6px}
+pre#log{background:var(--log);color:var(--logfg);border-radius:8px;padding:10px;height:260px;overflow:auto;font:12.5px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-all;margin:8px 0}
+ul.plain{margin:6px 0;padding-left:20px}
+.hidden{display:none}
+.small{font-size:13px;color:var(--mut)}
+</style>
+</head>
+<body>
+<div class="ver" id="ver">Ver 0.1.1  JA2IZU</div>
+<main>
+<h1>DM-32UV 日本語フォント書き込み</h1>
+<p class="sub">DM-32UV の表示を日本語にするフォントを、ブラウザから USB 経由で書き込みます。</p>
+
+<div id="envNote" class="note bad hidden"></div>
+<div class="note warn"><b>書き込み中に「複数ファイルのダウンロード」の許可を求められたら、必ず「許可」してください。</b>バックアップ(.bin)が保存されます。</div>
+
+<section>
+<p>本体の現在の内容(校正データとフォント)を自動でバックアップ → 日本語フォントを書き込み → 読み戻して確認、の順に進みます。約6分かかります。バックアップは .bin ファイルで自動ダウンロードされます。</p>
+<label class="chk"><input type="checkbox" id="cOk"> <span>本体の電源を入れ、USBケーブルで接続しました。他の通信ソフトは閉じました。書き込み中はケーブルや電源に触れません。無償公開のツールで、ご利用は自己責任であることを了解しました。</span></label>
+<div class="row">
+<button class="primary" id="btnWrite" disabled>ポートを選んで書き込む</button>
+<button class="danger hidden" id="btnAbort">中断</button>
+</div>
+</section>
+
+<section>
+<div class="bar"><div id="barFill"></div></div>
+<div class="stat"><span id="phase">待機中</span><span id="elapsed"></span><span id="eta"></span></div>
+<div id="result"></div>
+<pre id="log"></pre>
+<button id="btnSaveLog">ログを保存</button>
+</section>
+
+<details id="secTools">
+<summary>元に戻す</summary>
+<p>バックアップの .bin を選びます(Radio_Y16 / HZK24S / HZK24T のうち、あるものだけで構いません)。上のチェックを入れてから押してください。</p>
+<div class="row"><input type="file" id="restoreFiles" accept=".bin" multiple></div>
+<div id="restorePlan" class="small"></div>
+<button class="danger" id="btnRestore" disabled>ポートを選んで書き戻す</button>
+</details>
+
+<section>
+<ul class="plain">
+<li>Chrome / Edge(PC版)で開いてください。</li>
+<li>書き込み中にPCがスリープしないよう、スリープ時間を10分以上にしてください。この画面は前面に出したままにします。</li>
+<li>止まったときは、本体の電源を入れ直して、やり直してください。</li>
+</ul>
+</section>
+</main>
+<script type="application/octet-stream" id="patchB64">__PATCH_B64__</script>
+<script>
+__CORE__
+</script>
+<script>
+const PATCH_SHA256 = "__PATCH_SHA__";
+__UI__
+</script>
+</body>
+</html>
